@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using ThreadState = System.Threading.ThreadState;
 
 namespace MyBuildAgent
 {
@@ -22,7 +21,7 @@ namespace MyBuildAgent
             Id = id;
             BuildPath = buildPath;
             Time = timeInSeconds;
-            buildProcess = ConfigureBuildProcess();
+            buildProcess = ConfigureBuildProcess(BuildPath);
 
             t = new Thread(() => Run());
             t.Start();
@@ -31,8 +30,10 @@ namespace MyBuildAgent
         public void Cancel()
         {
             IsCanceled = true;
-            if (t.ThreadState == ThreadState.WaitSleepJoin)
+            if (t.ThreadState == System.Threading.ThreadState.WaitSleepJoin)
+            {
                 t.Interrupt();
+            }
         }
 
         private void Run()
@@ -49,7 +50,7 @@ namespace MyBuildAgent
             }
         }
 
-        private Process ConfigureBuildProcess()
+        private Process ConfigureBuildProcess(string BuildPath)
         {
             return new Process
             {
@@ -74,11 +75,11 @@ namespace MyBuildAgent
             }
         }
 
-        private void TimedDelay(int time)
+        private void TimedDelay(int seconds)
         {
             try
             {
-                Thread.Sleep(Time * 1000);
+                Thread.Sleep(seconds * 1000);
             }
             catch (ThreadInterruptedException)
             {
